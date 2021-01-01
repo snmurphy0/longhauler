@@ -1,4 +1,5 @@
 --
+use shawn_i2b2syn
 --------------------------------------------------------------------------------
 --build_squelae_tables_into_csv.sql
 --
@@ -31,6 +32,7 @@ drop table fource_LocalPatientSummary
 -- and then 2 after that for outpatient stuff.
 --3) set the in_hospital variable to always be 1
 --4) added siteid to the begining of csv output (option 3)
+--5) changed the substring 3 -> 10 for ICD9 and ICD10
 
 --------------------------------------------------------------------------------
 -- General settings
@@ -83,8 +85,8 @@ insert into fource_config2
 		0, -- do NOT save_as_columns
 		'dbo.fource_out_', -- save_as_prefix (don't use "4CE" since it starts with a number)
 		0, -- do NOT output_as_columns
-		1, -- output_as_csv
-		0  -- output_as_csv with NO DATES
+		0, -- output_as_csv
+		1  -- output_as_csv with NO DATES
 
 create table fource_code_map (
 	code varchar(50) not null,
@@ -315,7 +317,8 @@ insert into fource_LocalPatientObservations (siteid, patient_num, days_since_adm
 		p.patient_num,
 		datediff(dd,p.admission_date,cast(f.start_date as date)),
 		'DIAG-ICD9',
-		left(substring(f.concept_cd, len(code_prefix_icd9cm)+1, 999), 3),
+		left(substring(f.concept_cd, len(code_prefix_icd9cm)+1, 999), 3)   -- changed the substring 3 -> 10
+		+ left(substring(f.concept_cd, len(code_prefix_icd9cm)+5, 999), 10),
 		-999
  	from fource_config x
 		cross join observation_fact f
@@ -330,7 +333,8 @@ insert into fource_LocalPatientObservations (siteid, patient_num, days_since_adm
 		p.patient_num,
 		datediff(dd,p.admission_date,cast(f.start_date as date)),
 		'DIAG-ICD10',
-		left(substring(f.concept_cd, len(code_prefix_icd10cm)+1, 999), 3),
+		left(substring(f.concept_cd, len(code_prefix_icd10cm)+1, 999), 3)
+		+ left(substring(f.concept_cd, len(code_prefix_icd10cm)+5, 999), 10),   -- changed the substring 3 -> 10
 		-999
  	from fource_config x
 		cross join observation_fact f
