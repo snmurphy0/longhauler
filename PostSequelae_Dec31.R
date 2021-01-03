@@ -125,12 +125,16 @@ PatientObservationsEnctrsDiagPheCodes$PhecodeLength<-nchar(PatientObservationsEn
 #=========Time Window (use days form admission or days from the first discharge)
 
 PatientObservationsEnctrsDiagPheCodes<-na.omit(PatientObservationsEnctrsDiagPheCodes)
-PatientObservationsEnctrsDiagPheCodes<-PatientObservationsEnctrsDiagPheCodes[PatientObservationsEnctrsDiagPheCodes$encounter_seq>1,]
+PatientObservationsEnctrsDiagPheCodes<-PatientObservationsEnctrsDiagPheCodes[PatientObservationsEnctrsDiagPheCodes$encounter_seq>0,]  ## changed from 1
 
 #== uncommented the fixed windows
+#PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
+#                                              breaks=c(-1000,0, 30, 60, 90, 120,1000),
+#                                              right = FALSE, labels = c( "<0" ,   "1-30"  , "31-60" ,  "61-90",  "91-120" ,">120" ))
+
 PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
-                                              breaks=c(-1000,0, 30, 60, 90, 120,1000),
-                                              right = FALSE, labels = c( "<0" ,   "<30"  , "31-60" ,  "61-90",  "91-120" ,">120" ))
+                                                     breaks=c(-Inf,0, 30, 60, 90, 120,Inf),
+                                                     right = FALSE, labels = c( "<0" ,   "0-29"  , "30-59" ,  "60-89",  "90-119" ,"120-inf" ))
 
 #== commented the computed windows
 #PatientObservationsEnctrsDiagPheCodes$timewindw <- cut2(PatientObservationsEnctrsDiagPheCodes$days_since_firstdischarge, g =5)
@@ -138,7 +142,8 @@ PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDi
 #=========Diagnosis in time Window - Bubble Graph
 CountDiagnosisTW<-PatientObservationsEnctrsDiagPheCodes[PatientObservationsEnctrsDiagPheCodes$PhecodeLength>=3,] %>%
   group_by(Description,timewindw) %>%
-  summarise(Freq=n()) 
+  #summarise(Freq=n())  ## this was giving duplicates
+  summarise(Freq=n_distinct(patient_num)) 
 
 CountDiagnosisNPts<-PatientObservationsEnctrsDiagPheCodes %>% 
   group_by(timewindw) %>%
@@ -147,6 +152,7 @@ CountDiagnosisNPts<-PatientObservationsEnctrsDiagPheCodes %>%
 CountDiagnosisDescr<-PatientObservationsEnctrsDiagPheCodes %>% 
   group_by(Description) %>%
   summarise(Pts=n_distinct(patient_num)) 
+
 CountDiagnosisDescr$perc<-(CountDiagnosisDescr$Pts/length(unique(CountDiagnosisDescr$Pts)))*100
 
 #For the Bubble Chart > select only Frequent Phecodes 
@@ -165,12 +171,12 @@ PostSequelaeList$DiagnosisBubblePlot<-ggplot(CountDiagnosis, aes(x=timewindw, y=
   geom_point(alpha=0.7)+ scale_size(range = c(.1, 15), name="% Patients")+
   scale_colour_gradient(low = "#4895ef", high = "#3a0ca3", name="# Patients")+
   theme(text = element_text(size=15))+
-  # xlab("Day since admission")+ylab("PheCode")
-  xlab("Day since First Discharge")+ylab("Murphy PheCode")
+  xlab("Day since admission")+ylab("PheCode")
+  #xlab("Day since First Discharge")+ylab("Murphy PheCode")
 
 
 save(PostSequelaeList, file="PostSequelaeListSIMULATED.RData")
 
 
-
+# 371     61-90                                                                     Viral infection  370 342 108.1871345
 
