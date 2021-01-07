@@ -84,7 +84,7 @@ insert into fource_config2
 		0, -- do NOT replace_patient_num
 		0, -- do NOT save_as_columns
 		'dbo.fource_out_', -- save_as_prefix (don't use "4CE" since it starts with a number)
-		0, -- do NOT output_as_columns
+		1, -- output_as_columns
 		0, -- output_as_csv
 		1  -- output_as_csv with NO DATES
 
