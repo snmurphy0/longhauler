@@ -1,5 +1,5 @@
 --
-use shawn_i2b2syn
+use Shawn_ACT_Test
 --------------------------------------------------------------------------------
 --build_squelae_tables_into_csv.sql
 --
@@ -55,13 +55,13 @@ create table fource_config (
 	output_as_csv bit -- Return the data in tables with a single column containing comma separated values
 )
 insert into fource_config
-	select 'i2b2syn', -- siteid
+	select 'MGB_ACT', -- siteid
 		1, -- include_race
 		0, -- race_in_fact_table
 		1, -- hispanic_in_fact_table
 		1, -- death_data_accurate
 		'ICD9CM:', -- code_prefix_icd9cm
-		'ICD10CM:', -- code_prefix_icd10cm
+		'ICD10:', -- code_prefix_icd10cm
 		'ICD9PCS:', -- code_prefix_icd9proc
 		'ICD10PCS:', -- code_prefix_icd10pcs
 		0, -- obfuscation_blur
@@ -84,9 +84,9 @@ insert into fource_config2
 		0, -- do NOT replace_patient_num
 		0, -- do NOT save_as_columns
 		'dbo.fource_out_', -- save_as_prefix (don't use "4CE" since it starts with a number)
-		1, -- output_as_columns
-		0, -- output_as_csv
-		1  -- output_as_csv with NO DATES
+		0, -- output_as_columns
+		0, -- do NOT output_as_csv WITH DATES
+		1  -- do NOT output_as_csv with NO DATES
 
 create table fource_code_map (
 	code varchar(50) not null,
