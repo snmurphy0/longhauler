@@ -1,0 +1,60 @@
+---
+title: "Post-Acute Phases"
+output: 
+  html_document: 
+    keep_md: yes
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(knitr)
+library(pander)
+
+```
+
+
+```{r load myData, include=FALSE}
+#load("PostSequelaeListSIMULATED.RData")
+#load("./SimulatedData/synPostSequelaeList.RData")
+load(PostSequelaeList, file="./ACTData/actPostSequelaeList.RData")
+```
+
+## Number of Encounters
+### Count of patients with a certain number of registred encounter
+
+```{r , echo=FALSE}
+plot(PostSequelaeList$NumberofEncounters)
+```
+
+## Duration and days between of Encounters
+### Duration (days) of the first admission for all the subjects
+
+```{r , echo=FALSE}
+plot(PostSequelaeList$Durationofthefirstadmission)
+```
+
+### Duration (days) of the first admission, in subject with/without a second readmission
+
+```{r , echo=FALSE}
+plot(PostSequelaeList$DurationofthefirstadmissionGroups)
+```
+
+### Duration (days) of single encouters following the first admission
+```{r , echo=FALSE}
+plot(PostSequelaeList$DurationoftheSinglefollowingencounters)
+```
+
+### Duration (days) of the entire observation period following the first admission 
+
+```{r , echo=FALSE}
+plot(PostSequelaeList$TotalDurationofthefollowingencounters)
+```
+
+
+
+## Diagnosis
+### Diagnosis in Encounters
+```{r ,echo=FALSE, fig.width = 15 ,fig.asp = .62,cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, warning=FALSE}
+plot(PostSequelaeList$DiagnosisBubblePlot)
+```
+
