@@ -1,3 +1,4 @@
+setwd("~/GitHub/longhauler")
 rm(list = ls())
 
 library(dplyr)
@@ -19,14 +20,14 @@ library(Hmisc)
 #PatientObservations<-read.csv("./SimulatedData/PatientObservationsSim.csv")
 
 #== added the new data files from i2b2syn (synthetic data from OMOP project) andth UTF to read Windows files
-#PatientSummary<-read.csv("./SimulatedData/synPatientSummary.csv",fileEncoding="UTF-8-BOM")
-#PatientClinicalCourse<-read.csv("./SimulatedData/synPatientClinicalCourse.csv",fileEncoding="UTF-8-BOM")
-#PatientObservations<-read.csv("./SimulatedData/synPatientObservations.csv",fileEncoding="UTF-8-BOM")
+PatientSummary<-read.csv("./SimulatedData/synPatientSummary.csv",fileEncoding="UTF-8-BOM")
+PatientClinicalCourse<-read.csv("./SimulatedData/synPatientClinicalCourse.csv",fileEncoding="UTF-8-BOM")
+PatientObservations<-read.csv("./SimulatedData/synPatientObservations.csv",fileEncoding="UTF-8-BOM")
 
 #== added the new data files from ACT_Stage (real data from ACT project) andth UTF to read Windows files
-PatientSummary<-read.csv("C:/Users/ShawnDad/Documents/DataTop/PatientSummary.csv",fileEncoding="UTF-8-BOM")
-PatientClinicalCourse<-read.csv("C:/Users/ShawnDad/Documents/DataTop/PatientClinicalCourse.csv",fileEncoding="UTF-8-BOM")
-PatientObservations<-read.csv("C:/Users/ShawnDad/Documents/DataTop/PatientObservations.csv",fileEncoding="UTF-8-BOM")
+#PatientSummary<-read.csv("./ACTData/actPatientSummary.csv",fileEncoding="UTF-8-BOM")
+#PatientClinicalCourse<-read.csv("./ACTData/actPatientClinicalCourse.csv",fileEncoding="UTF-8-BOM")
+#PatientObservations<-read.csv("./ACTData/actPatientObservations.csv",fileEncoding="UTF-8-BOM")
 PostSequelaeList<-list()
 
 
@@ -180,8 +181,9 @@ PostSequelaeList$DiagnosisBubblePlot<-ggplot(CountDiagnosis, aes(x=timewindw, y=
   xlab("Day since admission")+ylab("PheCode")
   #xlab("Day since First Discharge")+ylab("Murphy PheCode")
 
-
-save(PostSequelaeList, file="C:/Users/ShawnDad/Documents/DataTop/PostSequelaeListSIMULATED.RData")
+#save(PostSequelaeList, file="PostSequelaeListSIMULATED.RData")
+save(PostSequelaeList, file="./SimulatedData/synPostSequelaeList.RData")
+#save(PostSequelaeList, file="./ACTData/actPostSequelaeListSIMULATED.RData")
 
 
 # 371     61-90                                                                     Viral infection  370 342 108.1871345
