@@ -183,7 +183,7 @@ PostSequelaeList$DiagnosisBubblePlot<-ggplot(CountDiagnosis, aes(x=timewindw, y=
 
 #save(PostSequelaeList, file="PostSequelaeListSIMULATED.RData")
 save(PostSequelaeList, file="./SimulatedData/synPostSequelaeList.RData")
-#save(PostSequelaeList, file="./ACTData/actPostSequelaeListSIMULATED.RData")
+#save(PostSequelaeList, file="./ACTData/actPostSequelaeList.RData")
 
 
 # 371     61-90                                                                     Viral infection  370 342 108.1871345
