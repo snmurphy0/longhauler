@@ -164,9 +164,10 @@ CountDiagnosisDescr$perc<-(CountDiagnosisDescr$Pts/length(unique(CountDiagnosisD
 CountDiagnosisTW$perc<-(CountDiagnosisTW$Freq/length(unique(CountDiagnosisTW$Freq)))*100    ################################# HERE
 
 #For the Bubble Chart > select only Frequent Phecodes 
-#keep<-data.frame(Description=unique(CountDiagnosisDescr[CountDiagnosisDescr$perc>200,c("Description")]))  #specify bubble cutoff here
+#keep<-data.frame(Description=unique(CountDiagnosisDescr[CountDiagnosisDescr$perc>100,c("Description")]))  #specify bubble cutoff here
 #keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$Freq>24) & (CountDiagnosisTW$timewindw==c("60-89")), c("Description") ]))  #specify bubble cutoff here
-keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$perc>20) & (CountDiagnosisTW$timewindw==c("60-89")), c("Description") ]))  #specify bubble cutoff here ################################# HERE
+#keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$perc>20) & (CountDiagnosisTW$timewindw==c("120-inf")), c("Description") ]))  #specify bubble cutoff here ################################# HERE
+keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$perc>20) & (CountDiagnosisTW$timewindw==c("120-inf")), c("Description") ]))  #specify bubble cutoff here ################################# HERE
 
 
 CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)

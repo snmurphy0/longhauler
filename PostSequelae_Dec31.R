@@ -138,10 +138,15 @@ PatientObservationsEnctrsDiagPheCodes<-PatientObservationsEnctrsDiagPheCodes[Pat
 #PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
 #                                              breaks=c(-1000,0, 30, 60, 90, 120,1000),
 #                                              right = FALSE, labels = c( "<0" ,   "1-30"  , "31-60" ,  "61-90",  "91-120" ,">120" ))
-
+#PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
+#                                                     breaks=c(-Inf,0, 30, 60, 90, 120,Inf),
+#                                                     right = FALSE, labels = c( "<0" ,   "0-29"  , "30-59" ,  "60-89",  "90-119" ,"120-inf" ))
+#PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
+#                                                     breaks=c(-Inf, 0, 15, 30, 45, 60, 75, 90, 105, 120, Inf),
+#                                                     right = FALSE, labels = c( "<0","0-14","15-29","30-44","45-59","60-74","75-89","90-104","105-119","120-inf"))
 PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
-                                                     breaks=c(-Inf,0, 30, 60, 90, 120,Inf),
-                                                     right = FALSE, labels = c( "<0" ,   "0-29"  , "30-59" ,  "60-89",  "90-119" ,"120-inf" ))
+                                                     breaks=c(seq(0,120, by = 5)),
+                                                     right = FALSE)
 
 #== commented the computed windows
 #PatientObservationsEnctrsDiagPheCodes$timewindw <- cut2(PatientObservationsEnctrsDiagPheCodes$days_since_firstdischarge, g =5)
@@ -166,8 +171,9 @@ CountDiagnosisTW$perc<-(CountDiagnosisTW$Freq/length(unique(CountDiagnosisTW$Fre
 #For the Bubble Chart > select only Frequent Phecodes 
 #keep<-data.frame(Description=unique(CountDiagnosisDescr[CountDiagnosisDescr$perc>200,c("Description")]))  #specify bubble cutoff here
 #keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$Freq>24) & (CountDiagnosisTW$timewindw==c("60-89")), c("Description") ]))  #specify bubble cutoff here
-keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$perc>20) & (CountDiagnosisTW$timewindw==c("60-89")), c("Description") ]))  #specify bubble cutoff here ################################# HERE
-
+#keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$perc>20) & (CountDiagnosisTW$timewindw==c("60-74")), c("Description") ]))  #specify bubble cutoff here ################################# HERE
+#keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$perc>10) & (CountDiagnosisTW$timewindw==c("[20,25)")), c("Description") ]))  #specify bubble cutoff here ################################# HERE
+keep<-data.frame(Description=unique(CountDiagnosisDescr[CountDiagnosisDescr$perc>20,c("Description")]))  #specify bubble cutoff here
 
 CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)
 CountDiagnosis$perc<-(CountDiagnosis$Freq/CountDiagnosis$Pts)*100
@@ -184,10 +190,11 @@ PostSequelaeList$DiagnosisBubblePlot<-ggplot(CountDiagnosis, aes(x=timewindw, y=
   xlab("Day since admission")+ylab("PheCode")
   #xlab("Day since First Discharge")+ylab("Murphy PheCode")
 
-#save(PostSequelaeList, file="PostSequelaeListSIMULATED.RData")
+#save(PostSequelaeList, file="./SimulatedData/PostSequelaeListSIMULATED.RData")
 save(PostSequelaeList, file="./SimulatedData/synPostSequelaeList.RData")
 #save(PostSequelaeList, file="./ACTData/actPostSequelaeList.RData")
 
 
 # 371     61-90                                                                     Viral infection  370 342 108.1871345
 
+PostSequelaeList

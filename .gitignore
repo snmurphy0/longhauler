@@ -2,3 +2,4 @@ actpatient*.csv
 act*.rdata
 readme.html
 *.rdata
+*.rhistory

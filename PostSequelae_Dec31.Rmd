@@ -14,9 +14,9 @@ library(pander)
 
 
 ```{r load myData, include=FALSE}
-#load("PostSequelaeListSIMULATED.RData")
-load("./SimulatedData/synPostSequelaeList.RData")
-#load(PostSequelaeList, file="./ACTData/actPostSequelaeList.RData")
+#load(file = "./SimulatedData/PostSequelaeListSIMULATED.RData")
+load(file = "./SimulatedData/synPostSequelaeList.RData")
+#load(file = "./ACTData/actPostSequelaeList.RData")
 ```
 
 ## Number of Encounters
