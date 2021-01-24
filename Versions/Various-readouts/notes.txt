@@ -1,0 +1,4 @@
+•	Graph B/C/D: I filtered the data to only show the top 10 PheCodes, ranked by descending % of patients in the last time window (90-119 in synthetic data). However, there were only 5 PheCodes in the 90-119 timeframe. 
+•	Graph B: As for the size and colors of each point, I swapped the # of patients with and % of patients, per time window, to make the plot a bit easier to interpret. 
+•	Graph C: I focused on days 90-119 to clearly indicate which conditions have the highest number of patients, slowest decline over time, and highest % of patients in the timeframe. This could serve as a secondary view. 
+•	Graph D: The colors are skewed downwards (i.e. more points are blue) because the synthetic data had low patient counts in the 90-119 time window (7 patients), compared to the first 30 days (9308 patients). Will adjust accordingly, if we see the same trend in the real data. 
