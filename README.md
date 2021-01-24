@@ -19,7 +19,8 @@ To modify this document, use [markdown](https://rmarkdown.rstudio.com/articles_i
 The code is able to create graphs of what is afflicting patients who have had COXID-19 infections and now are being followed in the health care system.
 
 1. The current analysis shows just the codes (grouped into PheNorm codes) over time.  some issues are:
-   + It does no account for patients who are lost to follow-up.  *An analysis of only patients who have codes after 90 days (for example) might be better.*
+   + It does not account for patients who are lost to follow-up.  *An analysis of only patients who have codes after 90 days (for example) might be better.* 
+   In the "Versions" folder under the "subtraction-calculation" folder is a plan for developing this.
    + Instead of just showing days post admission, *it may be better to group the codes into pre-covid, covid admission, and number of days after discharge.*
    + *Could add stratification displays (perhaps in SHINEY) for severity, age, race, ethnicity.*
    
