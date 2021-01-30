@@ -16,7 +16,6 @@ library(viridis)
 #======!!! Note >> I have added the information about sequence of encounters !!!
 #======!!! It is necessary to have the information about encounters in the PatientClinicalCourse file as in the simulated data
 
-
 #== added the simulated data files from Arianna
 #PatientSummary<-read.csv("./SimulatedData/PatientSummarySim.csv")
 #PatientClinicalCourse<-read.csv("./SimulatedData/PatientClinicalCourseSim.csv")
@@ -83,11 +82,6 @@ PatientClinicalCourseGrouped<-PatientClinicalCourse %>%
 
 PatientObservations<-na.omit(PatientObservations)
 
-#created new proxy column, to determine whether the PheCode was assigned before or after COVID diagnosis 
-PatientObservationsv2 <- PatientObservations 
-PatientObservationsv2 <-PatientObservationsv2 %>% mutate("Pre-Covid?" = sample(c("Yes","No"),dim(PatientObservationsv2)[1],replace=TRUE))
-PatientObservations <- PatientObservationsv2
-
 # Add encounter information (observation admission day > 0)
 PatientObservationsMerge<-merge(PatientObservations[PatientObservations$days_since_admission>=0,],PatientClinicalCourseGrouped, by=c("siteid","patient_num") , all = TRUE)
 
@@ -132,6 +126,8 @@ PatientObservationsEnctrsDiagPheCodes$Phecode <- as.character(PatientObservation
 #commented out original
 PatientObservationsEnctrsDiagPheCodes$PhecodeLength<-nchar(PatientObservationsEnctrsDiagPheCodes$Phecode)
 
+#created new proxy column, to determine whether the PheCode was assigned before or after COVID diagnosis 
+PatientObservationsEnctrsDiagPheCodes <-PatientObservationsEnctrsDiagPheCodes %>% mutate("Pre-Covid?" = sample(c("Yes","No"),dim(PatientObservationsEnctrsDiagPheCodes)[1],replace=TRUE))
 
 #PatientObservationsEnctrsDiagPheCodes should include combined patient summary / observations + PheCodes
 
@@ -167,9 +163,8 @@ CountDiagnosisNPts<-PatientObservationsEnctrsDiagPheCodes %>%
   group_by(timewindw) %>%
   summarise(Pts=n_distinct(patient_num)) 
 
-#CountDiagnosisDescr<-PatientObservationsEnctrsDiagPheCodes %>% 
-#  group_by(Description) %>%
-#summarise(Pts=n_distinct(patient_num)) 
+CountDiagnosisDescr<-PatientObservationsEnctrsDiagPheCodes %>% 
+  group_by(Description) %>% summarise(Pts=n_distinct(patient_num)) 
 
 ####version 2 
 CountDiagnosisDescr_subtracted<-PatientObservationsEnctrsDiagPheCodes %>% filter(PatientObservationsEnctrsDiagPheCodes["Pre-Covid?"] == "No") %>%
@@ -179,14 +174,14 @@ CountDiagnosisDescr_subtracted<-PatientObservationsEnctrsDiagPheCodes %>% filter
 #new size (after subtraction): 739174
 
 CountDiagnosisDescr$perc<-(CountDiagnosisDescr$Pts/length(unique(CountDiagnosisDescr$Pts)))*100
+CountDiagnosisDescr_subtracted$perc<-(CountDiagnosisDescr_subtracted$Pts/length(unique(CountDiagnosisDescr_subtracted$Pts)))*100
 CountDiagnosisTW$perc<-(CountDiagnosisTW$Freq/length(unique(CountDiagnosisTW$Freq)))*100    ################################# HERE
 
 #For the Bubble Chart > select only Frequent Phecodes 
 #keep<-data.frame(Description=unique(CountDiagnosisDescr[CountDiagnosisDescr$perc>200,c("Description")]))  #specify bubble cutoff here
 #keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$Freq>24) & (CountDiagnosisTW$timewindw==c("60-89")), c("Description") ]))  #specify bubble cutoff here
-keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$Freq>24) & (CountDiagnosisTW$timewindw==c("60-69")), c("Description") ]))  #specify bubble cutoff here
+keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$Freq>24), c("Description") ]))  #specify bubble cutoff here
 
-#keep <- CountDiagnosisTW
 #keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$perc>20) & (CountDiagnosisTW$timewindw==c("60-64")), c("Description") ]))  #specify bubble cutoff here ################################# HERE
 #keep<-data.frame(Description=unique(CountDiagnosisTW[ CountDiagnosisTW$timewindw==c("60-64"), c("Description") ]))  #specify bubble cutoff here ################################# HERE
 
@@ -202,7 +197,7 @@ PostSequelaeList$CountDiagnosisTot<-CountDiagnosis
 CountDiagnosis<-CountDiagnosis[CountDiagnosis$Description %in% keep$Description,]
 CountDiagnosis$Description <- factor(CountDiagnosis$Description, levels = CountDiagnosisDescr$Description[order(CountDiagnosisDescr$perc)])
 
-PostSequelaeList$DiagnosisBubblePlot_original<-ggplot(CountDiagnosis, aes(x=timewindw, y=Description,  size = perc,color=Freq)) +
+PostSequelaeList$DiagnosisBubblePlotA_original<-ggplot(CountDiagnosis, aes(x=timewindw, y=Description,  size = perc,color=Freq)) +
   geom_point(alpha=0.7)+ scale_size(range = c(.1, 15), name="% Patients")+
   scale_colour_gradient(low = "#4895ef", high = "#3a0ca3", name="# Patients")+
   theme(text = element_text(size=15))+
@@ -211,42 +206,18 @@ PostSequelaeList$DiagnosisBubblePlot_original<-ggplot(CountDiagnosis, aes(x=time
 
 PostSequelaeList$DiagnosisBubblePlotA_original
 
-#Filtered graph, showing top 5 diagnoses (based on % patients in 100-109 timewindow)
+#Filtered graph, showing top 5 diagnoses (based on % patients in 100-109 timewindow) + subtracting pre-covid diagnoses
 CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)
 CountDiagnosis$perc<-(CountDiagnosis$Freq/CountDiagnosis$Pts)*100
 
 PostSequelaeList$CountDiagnosisTot<-CountDiagnosis
 
 CountDiagnosis<-CountDiagnosis[CountDiagnosis$Description %in% keep$Description,]
-CountDiagnosis$Description <- factor(CountDiagnosis$Description, levels = CountDiagnosisDescr$Description[order(CountDiagnosisDescr$perc)])
+CountDiagnosis$Description <- factor(CountDiagnosis$Description, levels = CountDiagnosisDescr_subtracted$Description[order(CountDiagnosisDescr_subtracted$perc)])
 
 CountDiagnosis_filtered <- CountDiagnosis %>% filter (Description %in% as.data.frame(CountDiagnosis %>% 
                                                                                        select(timewindw,Description,perc,) %>% arrange(perc) 
-                                                                                     %>% filter(timewindw == '100-109') #to change to 120-inf
-                                                                                     %>% top_n(5,Description))$Description)
-
-PostSequelaeList$DiagnosisBubblePlotA_filtered<-ggplot(CountDiagnosis_filtered, aes(x=timewindw, y=Description,  size = Freq,color=perc)) +
-  geom_point(alpha=0.7)+ scale_size(range = c(7, 25), name="# Patients")+
-  scale_colour_gradient(low = "#4895ef", high = "red", name="% Patients")+
-  theme(text = element_text(size=15))+
-  xlab("Day since admission")+ylab("PheCode") + 
-  scale_y_discrete(limits = as.data.frame(CountDiagnosis_filtered %>% 
-                                            select(timewindw,Description,perc,) %>% arrange(perc) 
-                                          %>% filter(timewindw == '91-120' | timewindw == '100-109') 
-                                          %>% top_n(10,Description))$Description) 
-#xlab("Day since First Discharge")+ylab("Murphy PheCode")
-
-PostSequelaeList$DiagnosisBubblePlotA_filtered
-
-#save(PostSequelaeList, file="PostSequelaeListSIMULATED.RData")
-save(PostSequelaeList, file="./SimulatedData/synPostSequelaeList.RData") #TBD
-#save(PostSequelaeList, file="./ACTData/actPostSequelaeList.RData")
-
-
-#Subtracted Diagnoses graph (Jan 29)
-CountDiagnosis_filtered <- CountDiagnosis %>% filter (Description %in% as.data.frame(CountDiagnosis %>% 
-                                                                                       select(timewindw,Description,perc,) %>% arrange(perc) 
-                                                                                     %>% filter(timewindw == '100-109') #to change to 120-inf
+                                                                                     %>% filter(timewindw == '120-inf'| timewindw == '110-119'| timewindw == '100-109' | timewindw == '90-99') #to change to 120-inf
                                                                                      %>% top_n(5,Description))$Description)
 
 PostSequelaeList$DiagnosisBubblePlotA_subtracted<-ggplot(CountDiagnosis_filtered, aes(x=timewindw, y=Description,  size = Freq,color=perc)) +
@@ -256,7 +227,7 @@ PostSequelaeList$DiagnosisBubblePlotA_subtracted<-ggplot(CountDiagnosis_filtered
   xlab("Day since admission")+ylab("PheCode") + 
   scale_y_discrete(limits = as.data.frame(CountDiagnosis_filtered %>% 
                                             select(timewindw,Description,perc,) %>% arrange(perc) 
-                                          %>% filter(timewindw == '91-120' | timewindw == '100-109') 
+                                          %>% filter(timewindw == '90-99' | timewindw == '100-109' | timewindw == '110-119') 
                                           %>% top_n(10,Description))$Description) 
 #xlab("Day since First Discharge")+ylab("Murphy PheCode")
 
@@ -267,20 +238,20 @@ save(PostSequelaeList, file="./SimulatedData/synPostSequelaeList.RData") #TBD
 #save(PostSequelaeList, file="./ACTData/actPostSequelaeList.RData")
 
 
-
-#Summary Graph of latest time window (x = # of patients, y = percent )
-CountDiagnosis_filtered_B <- CountDiagnosis %>% filter(timewindw == "0-29" | timewindw == "90-119") %>% 
+#Summary Graph of latest time window (x = # of patients, y = percent)
+#time windows above "100-109" did not have sufficient patient observations to visualize
+CountDiagnosis_filtered_B <- CountDiagnosis %>% filter(timewindw == "0-9" | timewindw == "90-99") %>% 
   group_by(Description) %>% arrange(timewindw, .by_group = TRUE) %>% 
-  mutate(perc_growthrate = (perc/lag(perc) - 1) * 100) %>% filter(timewindw == "90-119")
+  mutate(perc_growthrate = (perc/lag(perc) - 1) * 100) %>% filter(timewindw == "90-99")
 
-PostSequelaeList$DiagnosisBubblePlot_B<-ggplot(CountDiagnosis_filtered_B, aes(x=Freq, y=perc_growthrate,  size = perc,color=Description,label=Description)) +
+PostSequelaeList$DiagnosisBubblePlotB<-ggplot(CountDiagnosis_filtered_B, aes(x=Freq, y=perc_growthrate,  size = perc,color=Description,label=Description)) +
   geom_point(alpha=0.7)+ scale_size(range = c(10, 20), name="% Patients")+
   #scale_fill_brewer(discrete=TRUE, guide=FALSE, option="B") +
   scale_color_brewer(palette = "Set1") +
   theme(text = element_text(size=15))+
   xlab("# of Patients")+ylab("% Patients (Growth Rate)")+
   geom_text(color="black",size=2,position=position_dodge(width=0.9)) +
-  ggtitle("Days Since Admission: 90-119")
+  ggtitle("Days Since Admission: 90-99")
 
-PostSequelaeList$DiagnosisBubblePlot_B
+PostSequelaeList$DiagnosisBubblePlotB
 
