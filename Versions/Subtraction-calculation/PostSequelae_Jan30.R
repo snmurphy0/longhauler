@@ -144,11 +144,18 @@ PatientObservationsEnctrsDiagPheCodes<-PatientObservationsEnctrsDiagPheCodes[Pat
 
 #reduced time window size 
 #confirm if we should reduce to weekly increments (7 instead of 10)
+# PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
+#                                                      #breaks=c(-Inf,0, 30, 60, 90, 120,Inf),
+#                                                      #right = FALSE, labels = c( "<0" ,   "0-29"  , "30-59" ,  "60-89",  "90-119" ,"120-inf" ))
+#                                                      breaks=c(-Inf,0,10,20,30,40,50,60,70,80,90,100,110,120,Inf),
+#                                                      right = FALSE, labels = c("<0","0-9","10-19","20-29","30-39","40-49","50-59","60-69","70-79","80-89","90-99","100-109","110-119","120-inf"))
+
 PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDiagPheCodes$days_since_admission,
                                                      #breaks=c(-Inf,0, 30, 60, 90, 120,Inf),
                                                      #right = FALSE, labels = c( "<0" ,   "0-29"  , "30-59" ,  "60-89",  "90-119" ,"120-inf" ))
-                                                     breaks=c(-Inf,0,10,20,30,40,50,60,70,80,90,100,110,120,Inf),
-                                                     right = FALSE, labels = c("<0","0-9","10-19","20-29","30-39","40-49","50-59","60-69","70-79","80-89","90-99","100-109","110-119","120-inf"))
+                                                     breaks=c(-Inf,0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,Inf),
+                                                     right = FALSE, labels = c("<0","0-5","5-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45",
+                                                     "45-50","50-55","55-60","60-65","65-70","70-75","75-80","80-85","85-90","90-95","95-100","100-105","105-110","110-115","115-120","120-inf"))
 
 #== commented the computed windows
 #PatientObservationsEnctrsDiagPheCodes$timewindw <- cut2(PatientObservationsEnctrsDiagPheCodes$days_since_firstdischarge, g =5)
@@ -197,10 +204,18 @@ PostSequelaeList$CountDiagnosisTot<-CountDiagnosis
 CountDiagnosis<-CountDiagnosis[CountDiagnosis$Description %in% keep$Description,]
 CountDiagnosis$Description <- factor(CountDiagnosis$Description, levels = CountDiagnosisDescr$Description[order(CountDiagnosisDescr$perc)])
 
+#cs <- c(min(CountDiagnosis$Freq),mean(CountDiagnosis$Freq),max(CountDiagnosis$Freq))
+cs <- seq(from = min(CountDiagnosis$Freq), to = max(CountDiagnosis$Freq), by = as.integer(max(CountDiagnosis$Freq)/5))
+
 PostSequelaeList$DiagnosisBubblePlotA_original<-ggplot(CountDiagnosis, aes(x=timewindw, y=Description,  size = perc,color=Freq)) +
   geom_point(alpha=0.7)+ scale_size(range = c(.1, 15), name="% Patients")+
-  scale_colour_gradient(low = "#4895ef", high = "#3a0ca3", name="# Patients")+
+  scale_colour_gradient(low = "#4895ef", high = "#990000", 
+                        n.breaks = 5, name="# Patients")+
+  # scale_color_manual(breaks = c("7500", "5000", "2500"),
+  #                    values=c("#4895ef", "blue", "red")) +
+  #scale_color_brewer(palette="Spectral")+
   theme(text = element_text(size=15))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.75))+
   xlab("Day since admission")+ylab("PheCode")
 #xlab("Day since First Discharge")+ylab("Murphy PheCode")
 
