@@ -289,7 +289,7 @@ PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 49087) %>%
   select(Description,patient_num,timewindw,Description) %>%
   group_by(patient_num,timewindw) %>% summarise(code_count = n_distinct(Description)) %>%
   ggplot()  +
-  
+   
   geom_col(PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 49087)  %>%
              group_by(patient_num,timewindw,Description) %>% summarise(code_count = n_distinct(Description)),
            mapping = aes(x=timewindw,fill=Description)) + 
