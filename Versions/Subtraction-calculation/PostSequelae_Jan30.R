@@ -127,6 +127,7 @@ PatientObservationsEnctrsDiagPheCodes$Phecode <- as.character(PatientObservation
 PatientObservationsEnctrsDiagPheCodes$PhecodeLength<-nchar(PatientObservationsEnctrsDiagPheCodes$Phecode)
 
 #created new proxy column, to determine whether the PheCode was assigned before or after COVID diagnosis 
+#NOTE: noticing duplicates in data (02/12)
 PatientObservationsEnctrsDiagPheCodes <-PatientObservationsEnctrsDiagPheCodes %>% mutate("Pre-Covid?" = sample(c("Yes","No"),dim(PatientObservationsEnctrsDiagPheCodes)[1],replace=TRUE))
 
 #PatientObservationsEnctrsDiagPheCodes should include combined patient summary / observations + PheCodes
@@ -156,33 +157,70 @@ PatientObservationsEnctrsDiagPheCodes$timewindw<-cut(PatientObservationsEnctrsDi
                                                      breaks=c(-Inf,0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,Inf),
                                                      right = FALSE, labels = c("<0","0-5","5-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45",
                                                      "45-50","50-55","55-60","60-65","65-70","70-75","75-80","80-85","85-90","90-95","95-100","100-105","105-110","110-115","115-120","120-inf"))
+#Scenario Modeling:
+
+#case #1 (on, prior, or after admission)
+PatientObservationsEnctrsDiagPheCodes_case1 <- PatientObservationsEnctrsDiagPheCodes
+
+#case #2 (on, prior, or after admission)
+PatientObservationsEnctrsDiagPheCodes_case2 <- PatientObservationsEnctrsDiagPheCodes %>% 
+  group_by(patient_num) %>% filter(!timewindw %in% c("<0","0-5","5-10","10-15","15-20","20-25","25-30"))
+
+#case #3 (diagnosis which are new discharge - 60d-150d)
+PatientObservationsEnctrsDiagPheCodes_case3 <- PatientObservationsEnctrsDiagPheCodes %>% 
+  group_by(patient_num) %>% filter(timewindw %in% c("60-65","65-70","70-75","75-80","80-85","85-90","90-95",
+                          "95-100","100-105","105-110","110-115","115-120","120-inf"))
+
+#case #4 (first diagnosis which are new discharge - 60d and 100-150d)
+PatientObservationsEnctrsDiagPheCodes_case4 <- PatientObservationsEnctrsDiagPheCodes %>% 
+  group_by(patient_num) %>% filter(timewindw %in% c("60-65","100-105","105-110","115-120","120-inf"))
+
 
 #== commented the computed windows
 #PatientObservationsEnctrsDiagPheCodes$timewindw <- cut2(PatientObservationsEnctrsDiagPheCodes$days_since_firstdischarge, g =5)
 
 #=========Diagnosis in time Window - Bubble Graph
-CountDiagnosisTW<-PatientObservationsEnctrsDiagPheCodes[PatientObservationsEnctrsDiagPheCodes$PhecodeLength>=3,] %>%
-  group_by(Description,timewindw) %>%
-  #summarise(Freq=n())  ## this was giving duplicates
-  summarise(Freq=n_distinct(patient_num)) 
 
-CountDiagnosisNPts<-PatientObservationsEnctrsDiagPheCodes %>% 
-  group_by(timewindw) %>%
-  summarise(Pts=n_distinct(patient_num)) 
+countdiagnosis <- function(PatientObs) {
+  
+  CountDiagnosisTW<-PatientObs[PatientObs$PhecodeLength>=3,] %>%
+    group_by(Description,timewindw) %>%
+    #summarise(Freq=n())  ## this was giving duplicates
+    summarise(Freq=n_distinct(patient_num)) 
+  
+  CountDiagnosisNPts<-PatientObs %>% 
+    group_by(timewindw) %>%
+    summarise(Pts=n_distinct(patient_num)) 
+  
+  CountDiagnosisDescr<-PatientObs %>% 
+    group_by(Description) %>% summarise(Pts=n_distinct(patient_num)) 
+  
+  ####version 2 
+  #CountDiagnosisDescr_subtracted<-PatientObs %>% filter(PatientObs["Pre-Covid?"] == "No") %>%
+  #  group_by(Description) %>% summarise(Pts=n_distinct(patient_num)) 
+  
+  CountDiagnosisDescr$perc<-(CountDiagnosisDescr$Pts/length(unique(CountDiagnosisDescr$Pts)))*100
+  CountDiagnosisTW$perc<-(CountDiagnosisTW$Freq/length(unique(CountDiagnosisTW$Freq)))*100  
+  
+  CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)
+  CountDiagnosis$perc<-(CountDiagnosis$Freq/CountDiagnosis$Pts)*100
+}
 
-CountDiagnosisDescr<-PatientObservationsEnctrsDiagPheCodes %>% 
-  group_by(Description) %>% summarise(Pts=n_distinct(patient_num)) 
+CountDiagnosis_case1 <- countdiagnosis(PatientObservationsEnctrsDiagPheCodes_case1)
+CountDiagnosis_case2 <- countdiagnosis(PatientObservationsEnctrsDiagPheCodes_case2)
+CountDiagnosis_case3 <- countdiagnosis(PatientObservationsEnctrsDiagPheCodes_case3)
+CountDiagnosis_case4 <- countdiagnosis(PatientObservationsEnctrsDiagPheCodes_case4)
+CountDiagnosis_case5 <- countdiagnosis(PatientObservationsEnctrsDiagPheCodes_case5)
 
-####version 2 
-CountDiagnosisDescr_subtracted<-PatientObservationsEnctrsDiagPheCodes %>% filter(PatientObservationsEnctrsDiagPheCodes["Pre-Covid?"] == "No") %>%
-  group_by(Description) %>% summarise(Pts=n_distinct(patient_num)) 
+#countdiagnosis(PatientObservationsEnctrsDiagPheCodes_case5)
+
 
 #original size: 369338
 #new size (after subtraction): 739174
+#CountDiagnosisDescr_subtracted$perc<-(CountDiagnosisDescr_subtracted$Pts/length(unique(CountDiagnosisDescr_subtracted$Pts)))*100
 
-CountDiagnosisDescr$perc<-(CountDiagnosisDescr$Pts/length(unique(CountDiagnosisDescr$Pts)))*100
-CountDiagnosisDescr_subtracted$perc<-(CountDiagnosisDescr_subtracted$Pts/length(unique(CountDiagnosisDescr_subtracted$Pts)))*100
-CountDiagnosisTW$perc<-(CountDiagnosisTW$Freq/length(unique(CountDiagnosisTW$Freq)))*100    ################################# HERE
+  ################################# HERE
+
 
 #For the Bubble Chart > select only Frequent Phecodes 
 #keep<-data.frame(Description=unique(CountDiagnosisDescr[CountDiagnosisDescr$perc>200,c("Description")]))  #specify bubble cutoff here
@@ -196,8 +234,8 @@ keep<-data.frame(Description=unique(CountDiagnosisTW[ (CountDiagnosisTW$Freq>24)
 
 
 #original graph 
-CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)
-CountDiagnosis$perc<-(CountDiagnosis$Freq/CountDiagnosis$Pts)*100
+# CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)
+# CountDiagnosis$perc<-(CountDiagnosis$Freq/CountDiagnosis$Pts)*100
 
 PostSequelaeList$CountDiagnosisTot<-CountDiagnosis
 
@@ -214,14 +252,23 @@ PostSequelaeList$DiagnosisBubblePlotA_original<-ggplot(CountDiagnosis, aes(x=tim
   # scale_color_manual(breaks = c("7500", "5000", "2500"),
   #                    values=c("#4895ef", "blue", "red")) +
   #scale_color_brewer(palette="Spectral")+
-  theme(text = element_text(size=15))+
+  theme(text = element_text(size=12))+
   theme(axis.text.x = element_text(angle = 45, vjust = 0.75))+
   xlab("Day since admission")+ylab("PheCode")
 #xlab("Day since First Discharge")+ylab("Murphy PheCode")
 
 PostSequelaeList$DiagnosisBubblePlotA_original
 
-#Filtered graph, showing top 5 diagnoses (based on % patients in 100-109 timewindow) + subtracting pre-covid diagnoses
+#Output a Summary Table 
+library(kableExtra)
+library(DT)
+datatable(t(unique(CountDiagnosis %>% group_by(Pts) %>% select(timewindw,Pts) %>% top_n(1))))
+
+#Time Plot (Top 5 disease states)
+CountDiagnosis %>% filter(Description %in% c("Pneumonia","Other symptoms of respiratory system")) %>% 
+  ggplot(aes(x=timewindw, y=Freq, group=Description, color=Description)) + geom_line()
+
+#Filtered graph (version A), showing top 5 diagnoses (based on % patients in 100-109 timewindow) + subtracting pre-covid diagnoses
 CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)
 CountDiagnosis$perc<-(CountDiagnosis$Freq/CountDiagnosis$Pts)*100
 
