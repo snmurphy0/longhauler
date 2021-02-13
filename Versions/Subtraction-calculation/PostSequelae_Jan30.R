@@ -284,8 +284,37 @@ CountDiagnosis %>% filter(Description %in% c("Viral infection", "Viremia", "Acut
 # patient_num = 21449 (contributed to disease with highest %)
 # patinet_num = 53149 (last patient to be diagnosise (highest days_since_admission))
 
-PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 53149) %>% 
-  ggplot(aes(x=timewindw, y=count(concept_code), group=Description, color=Description)) + geom_line(stat="identity")
+
+PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 49087) %>% 
+  select(Description,patient_num,timewindw,Description) %>%
+  group_by(patient_num,timewindw) %>% summarise(code_count = n_distinct(Description)) %>%
+  ggplot()  +
+  
+  geom_col(PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 49087)  %>%
+             group_by(patient_num,timewindw,Description) %>% summarise(code_count = n_distinct(Description)),
+           mapping = aes(x=timewindw,fill=Description)) + 
+  
+  aes(x=timewindw,y=code_count,group=1) + geom_point() + geom_line() + 
+
+  scale_fill_viridis_d()
+
+# PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 53149) %>% 
+#   select(Description,patient_num,timewindw,concept_code) %>%
+#   group_by(Description,patient_num,timewindw,concept_code) %>% summarise(code_count = n()) %>%
+#   ggplot(aes(x=timewindw, y=sum(code_count), group=Description, color=Description)) + geom_line()
+
+# PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 49087) %>% 
+#   select(Description,patient_num,timewindw) %>%
+#   group_by(patient_num,timewindw, concept_code) %>% summarise(code_count = n()) %>%
+#   ggplot(aes(x=timewindw,fill=Description)) + geom_bar() #+ geom_line() geom_point() + geom_line()
+
+#LINE GRAPH (summary points)
+  # ggplot(PatientObservationsEnctrsDiagPheCodes %>% filter(patient_num == 49087) %>% 
+  #          select(patient_num,timewindw,concept_code) %>%
+  #          group_by(patient_num,timewindw, concept_code) %>% summarise(code_count = n())) +  
+  #   geom_bar(aes(x=timewindw,fill=concept_code)) +
+  #   geom_point(aes(x=timewindw,y=code_count,group=1)) + geom_line(aes(x=timewindw,y=code_count,group=1))
+
 
 #Filtered graph (version A), showing top 5 diagnoses (based on % patients in 100-109 timewindow) + subtracting pre-covid diagnoses
 CountDiagnosis<-merge(CountDiagnosisTW,CountDiagnosisNPts, by=c("timewindw"), all.x = TRUE)
@@ -321,7 +350,7 @@ save(PostSequelaeList, file="./SimulatedData/synPostSequelaeList.RData") #TBD
 PostSequelaeList$DiagnosisBubblePlotA_bycase<-ggplot(CountDiagnosis_case3, aes(x=timewindw, y=Description,  size = perc,color=Freq)) +
   geom_point(alpha=0.7)+ scale_size(range = c(.1, 15), name="% Patients")+
   scale_colour_gradient(low = "#4895ef", high = "#990000", 
-                        n.breaks = 5, name="# Patients")+
+                        n.breaks = 5, name="# Patients",drop = FALSE)+
   theme(text = element_text(size=12))+
   theme(axis.text.x = element_text(angle = 45, vjust = 0.75))+
   xlab("Day since admission")+ylab("PheCode") + 
@@ -332,6 +361,7 @@ PostSequelaeList$DiagnosisBubblePlotA_bycase<-ggplot(CountDiagnosis_case3, aes(x
 #xlab("Day since First Discharge")+ylab("Murphy PheCode")
 
 PostSequelaeList$DiagnosisBubblePlotA_bycase
+
 
 #Summary Graph of latest time window (x = # of patients, y = percent)
 #time windows above "100-109" did not have sufficient patient observations to visualize
